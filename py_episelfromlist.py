@@ -1,4 +1,4 @@
-#!/Users/timothy.lee/anaconda/bin/python
+#!/Users/timothy.lee/anaconda/envs/python2.7/bin/python
 
 import re
 import math
@@ -7,7 +7,7 @@ import numpy as np
 import cPickle
 from obspy.core import UTCDateTime
 from obspy.core.util import gps2DistAzimuth
-import pg
+#import pg
 import os
 import shutil
 import glob
@@ -776,7 +776,7 @@ timeen = string.strip(sp[1])
 #Other definition (fixed at the moment)
 
 #List with station coordinates:
-statlist = "/Users/tdiehl/lib/sed_stations.GSE_SED.alias"
+statlist = "/Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/sed_stations.GSE_SED.alias"
 
 #SC3 origins are preferred over MANULOC (reference) after:
 SC3overKPdate = '2012-10-03 00:00:00'
