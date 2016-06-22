@@ -128,17 +128,6 @@ for x in range(0, evtnum):
 
 #---HISTOGRAM---#
 #time series
-<<<<<<< HEAD
-inter_event_times = []
-for i in range(1, len(focaltime)):
-    dt = UTCDateTime(focaltime[i-1]) - UTCDateTime(focaltime[len(focaltime)-1])
-    dt = dt / 86400
-    inter_event_times.append(dt)
-plt.hist(inter_event_times)#, bins=range(0, 200, 10))
-plt.xlabel("Magnitude 1+ event since 2016 [days]")
-plt.ylabel("count")
-plt.plot()
-=======
 times = []
 for i in range(1, len(focaltime)):
     dt = UTCDateTime(focaltime[i-1]) - UTCDateTime(focaltime[len(focaltime)-1])
@@ -151,17 +140,10 @@ time_y = mlab.normpdf(time_bins, time_mean, time_std)
 plt.plot(time_bins, time_y, 'r--')
 plt.xlabel("Magnitude 1+ event since 2016 [days]")
 plt.ylabel("count")
->>>>>>> feature
 plt.savefig('output/py_seismicity_schweiz_hist_time.png')
 plt.show()
 
 #depth series
-<<<<<<< HEAD
-plt.hist(hypodep)#, bins=range(0, 200, 10))
-plt.xlabel("Depth since 2016 [km]")
-plt.ylabel("count")
-plt.plot()
-=======
 depth_n, depth_bins, depth_patches = plt.hist(hypodep, normed=1, alpha=0.5, facecolor = 'green')
 depth_mean = np.mean(hypodep)
 depth_std = np.std(hypodep)
@@ -169,17 +151,10 @@ depth_y = mlab.normpdf(depth_bins, depth_mean, depth_std)
 plt.plot(depth_bins, depth_y, 'r--')
 plt.xlabel("Depth since 2016 [km]")
 plt.ylabel("count")
->>>>>>> feature
 plt.savefig('output/py_seismicity_schweiz_hist_depth.png')
 plt.show()
 
 #magnitude series
-<<<<<<< HEAD
-plt.hist(eqmag)#, bins=range(0, 200, 10))
-plt.xlabel("Mag. since 2016 [Ml]")
-plt.ylabel("count")
-plt.plot()
-=======
 mag_n, mag_bins, mag_patches = plt.hist(eqmag, normed=1, alpha=0.5, facecolor = 'green')
 mag_mean = np.mean(eqmag)
 mag_std = np.std(eqmag)
@@ -187,6 +162,5 @@ mag_y = mlab.normpdf(mag_bins, mag_mean, mag_std)
 plt.plot(mag_bins, mag_y, 'r--')
 plt.xlabel("Mag. since 2016 [Ml]")
 plt.ylabel("count")
->>>>>>> feature
 plt.savefig('output/py_seismicity_schweiz_hist_mag.png')
 plt.show()
