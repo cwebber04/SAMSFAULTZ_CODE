@@ -36,7 +36,7 @@ origin = evt.origins[0]
 otime = origin.time
 print(type(origin))
 t = origin.time
-inv = client.get_stations(longitude=origin.longitude, latitude=origin.latitude, maxradius=0.2, starttime=t, endtime =t+100, channel="LH*", network="CH", level="station")
+inv = client.get_stations(longitude=origin.longitude, latitude=origin.latitude, maxradius=0.2, starttime=t, endtime =t+100, channel="HH?", network="CH", level="station")
 print(type(inv))
 print(inv)
 inv.plot(projection="local", outfile='output/py_eq_utc20160521_ml3.0_station.png')
@@ -46,7 +46,7 @@ st = Stream()
 for network in inv:
     for station in network:
         try:
-            st += client.get_waveforms(network.code, station.code, "*", "LH*", t - 5 * 60, t + 30 * 60, attach_response=True)
+            st += client.get_waveforms(network.code, station.code, "*", "HH?", t - 5 * 60, t + 30 * 60, attach_response=True)
         except:
             pass
 #print(type(st))
@@ -71,11 +71,11 @@ st.select(component="Z").plot(bgcolor="#FF5733")
 #st.taper(type="hann", max_percentage=0.05)
 #st.select(component="Z").plot(bgcolor="#FF5733")
 print("...processing: filter")
-st.filter("lowpass", freq=0.5)
+st.filter("bandpass", freqmin=0.5, freqmax=30, corners=2)
 st.select(component="Z").plot(bgcolor="#FF5733")
 print("...processing: trim")
-st.trim(otime, otime+10*60)
-st.select(component="Z").plot(bgcolor="#FF5733")
+st.trim(otime, otime+1*60)
+st.select(component="Z").plot(bgcolor="#FF5733", outfile='output/py_eq_utc20160521_ml3.0_waveform.png')
 
 #final plot in both time and frequency domain
 st.plot(bgcolor="#FF5733", outfile='output/py_eq_utc20160521_ml3.0_waveform.png')
@@ -84,6 +84,6 @@ st.spectrogram(log=True, wlen=50, outfile='output/py_eq_utc20160521_ml3.0_spectr
 #write sac filefor tr in st: 
 print("writing files...")
 for tr in st: 
-	tr.write(tr.id + ".SAC", format="SAC")
+	tr.write("output/" + tr.id + ".SAC", format="SAC")
 
 print("program ended")
