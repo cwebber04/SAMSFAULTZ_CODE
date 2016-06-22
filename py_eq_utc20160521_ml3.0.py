@@ -26,7 +26,7 @@ endtime = UTCDateTime("2016-05-22")
 cat = client.get_events(starttime=starttime, endtime=endtime, minmagnitude=2, limit=5, mindepth=5)
 print(type(cat)) #Catalog
 print(cat)
-cat.plot() #add also resouces like: projection="local"
+cat.plot(outfile='output/py_eq_utc20160521_ml3.0_event.png') #add also resouces like: projection="local"
 
 #get stations with the event
 evt = cat[1]
@@ -39,7 +39,7 @@ t = origin.time
 inv = client.get_stations(longitude=origin.longitude, latitude=origin.latitude, maxradius=0.2, starttime=t, endtime =t+100, channel="LH*", network="CH", level="station")
 print(type(inv))
 print(inv)
-inv.plot(projection="local")
+inv.plot(projection="local", outfile='output/py_eq_utc20160521_ml3.0_station.png')
 
 #get the waveforms
 st = Stream()
@@ -64,22 +64,22 @@ st.select(component="Z").plot(bgcolor="#FF5733")
 #basic processing
 for tr in st:
     print(tr.id)
-print("...processing: trim")
-st.trim(otime, otime+10*60)
-st.select(component="Z").plot(bgcolor="#FF5733")
 print("...processing: remove trend")
 st.detrend("linear")
 st.select(component="Z").plot(bgcolor="#FF5733")
-print("...processing: tapor")
-st.taper(type="hann", max_percentage=0.05)
-st.select(component="Z").plot(bgcolor="#FF5733")
+#print("...processing: tapor")
+#st.taper(type="hann", max_percentage=0.05)
+#st.select(component="Z").plot(bgcolor="#FF5733")
 print("...processing: filter")
 st.filter("lowpass", freq=0.5)
 st.select(component="Z").plot(bgcolor="#FF5733")
+print("...processing: trim")
+st.trim(otime, otime+10*60)
+st.select(component="Z").plot(bgcolor="#FF5733")
 
 #final plot in both time and frequency domain
-#st.plot(bgcolor="#FF5733")
-#st.spectrogram(log=True, wlen=50);
+st.plot(bgcolor="#FF5733", outfile='output/py_eq_utc20160521_ml3.0_waveform.png')
+st.spectrogram(log=True, wlen=50, outfile='output/py_eq_utc20160521_ml3.0_spectro.png');
 
 #write sac filefor tr in st: 
 print("writing files...")
