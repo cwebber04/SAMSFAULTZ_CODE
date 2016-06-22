@@ -72,7 +72,9 @@ for x in range(0, evtnum):
 #y_offsets = [5000]
 #for label, xpt, ypt, x_offset, y_offset in zip(labels, x, y, x_offsets, y_offsets):
 #	plt.text(xpt+x_offset, ypt+y_offset, label)
-#plt.show()
+#plt.plot()
+#plt.savefig('output/py_seismicity_schweiz_global.png')
+##plt.show()
 #
 ##regional map
 #regional_map = Basemap(projection='merc', lat_0=7.5, lon_0=47.5, resolution='h', area_thresh=0.1, llcrnrlon=5, urcrnrlon=13, llcrnrlat=45.5, urcrnrlat=49) #also try: projection='ortho'
@@ -91,53 +93,63 @@ for x in range(0, evtnum):
 #y_offsets = [5000]
 #for label, xpt, ypt, x_offset, y_offset in zip(labels, x, y, x_offsets, y_offsets):
 #	plt.text(xpt+x_offset, ypt+y_offset, label)
-#plt.show()
+#plt.plot()
+#plt.savefig('output/py_seismicity_schweiz_regional.png')
+##plt.show()
 #
-#hypocenter map
-eq_map = Basemap(projection='merc', lat_0=7.5, lon_0=47.5, resolution='h', area_thresh=0.1, llcrnrlon=5, urcrnrlon=13, llcrnrlat=45.5, urcrnrlat=49) #also try: projection='ortho'
-eq_map.drawcoastlines()
-eq_map.drawcountries()
-eq_map.fillcontinents(color='lightgray')
-eq_map.drawmapboundary()
-eq_map.drawmeridians(np.arange(0, 360, 30))
-eq_map.drawparallels(np.arange(-90, 90, 30))
-min_marker_size = 4
-for lon, lat, mag, dep in zip(hypolon, hypolat, eqmag, hypodep):
-    x,y = eq_map(lon, lat)
-    msize = mag * min_marker_size
-    marker_string = get_marker_color(dep)
-    eq_map.plot(x, y, marker_string, markersize=msize)
-labels = ['SED'] #label
-lons = [08.547219]
-lats = [47.378578]
-xpts,ypts = eq_map(lons, lats)
-for label, xpt, ypt in zip(labels, xpts, ypts):
-	plt.text(xpt, ypt, label)
-title_string = "Earthquakes of Magnitude 1.0 or Greater\n" #title
-title_string += "%s through %s" % (starttime, endtime)
-plt.title(title_string)
-plt.show()
+##hypocenter map
+#eq_map = Basemap(projection='merc', lat_0=7.5, lon_0=47.5, resolution='h', area_thresh=0.1, llcrnrlon=5, urcrnrlon=13, llcrnrlat=45.5, urcrnrlat=49) #also try: projection='ortho'
+#eq_map.drawcoastlines()
+#eq_map.drawcountries()
+#eq_map.fillcontinents(color='lightgray')
+#eq_map.drawmapboundary()
+#eq_map.drawmeridians(np.arange(0, 360, 30))
+#eq_map.drawparallels(np.arange(-90, 90, 30))
+#min_marker_size = 4
+#for lon, lat, mag, dep in zip(hypolon, hypolat, eqmag, hypodep):
+#    x,y = eq_map(lon, lat)
+#    msize = mag * min_marker_size
+#    marker_string = get_marker_color(dep)
+#    eq_map.plot(x, y, marker_string, markersize=msize)
+#labels = ['SED'] #label
+#lons = [08.547219]
+#lats = [47.378578]
+#xpts,ypts = eq_map(lons, lats)
+#for label, xpt, ypt in zip(labels, xpts, ypts):
+#	plt.text(xpt, ypt, label)
+#title_string = "Earthquakes of Magnitude 1.0 or Greater\n" #title
+#title_string += "%s through %s" % (starttime, endtime)
+#plt.title(title_string)
+#plt.plot()
+#plt.savefig('output/py_seismicity_schweiz_hypo.png')
+##plt.show()
 
 #---HISTOGRAM---#
-##time series
-#inter_event_times = []
-#for i in range(1, len(focaltime)):
-#    dt = UTCDateTime(focaltime[i-1]) - UTCDateTime(focaltime[len(focaltime)-1])
-#    dt = dt / 86400
-#    inter_event_times.append(dt)
-#plt.hist(inter_event_times)#, bins=range(0, 200, 10))
-#plt.xlabel("Magnitude 1+ interevent times since 2016 [days]")
-#plt.ylabel("count")
-#plt.show()
+#time series
+inter_event_times = []
+for i in range(1, len(focaltime)):
+    dt = UTCDateTime(focaltime[i-1]) - UTCDateTime(focaltime[len(focaltime)-1])
+    dt = dt / 86400
+    inter_event_times.append(dt)
+plt.hist(inter_event_times)#, bins=range(0, 200, 10))
+plt.xlabel("Magnitude 1+ event since 2016 [days]")
+plt.ylabel("count")
+plt.plot()
+plt.savefig('output/py_seismicity_schweiz_hist_time.png')
+plt.show()
 
 #depth series
-#plt.hist(hypodep)#, bins=range(0, 200, 10))
-#plt.xlabel("Depth since 2016 [km]")
-#plt.ylabel("count")
-#plt.show()
+plt.hist(hypodep)#, bins=range(0, 200, 10))
+plt.xlabel("Depth since 2016 [km]")
+plt.ylabel("count")
+plt.plot()
+plt.savefig('output/py_seismicity_schweiz_hist_depth.png')
+plt.show()
 
 #magnitude series
-#plt.hist(eqmag)#, bins=range(0, 200, 10))
-#plt.xlabel("Mag. since 2016 [Ml]")
-#plt.ylabel("count")
-#plt.show()
+plt.hist(eqmag)#, bins=range(0, 200, 10))
+plt.xlabel("Mag. since 2016 [Ml]")
+plt.ylabel("count")
+plt.plot()
+plt.savefig('output/py_seismicity_schweiz_hist_mag.png')
+plt.show()
