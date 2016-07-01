@@ -20,6 +20,7 @@ from obspy.clients.fdsn import Client
 from obspy.clients.fdsn.header import URL_MAPPINGS
 from obspy.geodetics import locations2degrees
 from obspy.taup import TauPyModel
+from obspy.core.util.geodetics import gps2DistAzimuth, kilometer2degrees
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pylab as plt
 import numpy as np
@@ -149,4 +150,12 @@ my_map.drawmeridians(np.arange(0, 360, 30))
 my_map.drawparallels(np.arange(-90, 90, 30))
 plt.show()
 
-
+#---CALCULATE_WITH_TAUP---#
+model = TauPyModel(model="iasp91")
+phase = "P"
+for station in inventory[0][:3]:
+	distance, _, _ = gps2DistAzimuth(origin.latitude, origin.longitude, station.latitude, station.longitude)
+	distance = kilometer2degrees(distance / 1e3)
+	arrivals = model.get_travel_times(origin.depth / 1e3, distance, phase_list=[phase])
+	traveltime = arrivals[0].time
+	arrival_time = origin.time + traveltime
