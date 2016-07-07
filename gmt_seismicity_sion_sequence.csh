@@ -2,14 +2,13 @@
 
 #----------DESCRIPTION----------#
 #make seismic analysis of SION sequence with ETH-SED catalogue
-#1st: choose map type[country/topography based]
+#1st: choose map type[country/topography as background]
 #2nd: choose the prefered grd file
 #3rd: choose an optimal cpt file
 #4th: choose catalogue to plot seismicity
 #5th: choose between projection methods
 #6th: choose study area
-#last: make script executable with "chmod +x seismicity_schweiz.csh"
-
+#make script executable with "chmod +x seismicity_schweiz.csh"
 #ETOPO grd file: https://www.ngdc.noaa.gov/mgg/global/global.html
 #various cpt files could be downloaded at http://soliton.vm.bytemark.co.uk/pub/cpt-city/views/totp-cpt.html
 #html color codes: http://html-color-codes.info
@@ -19,21 +18,13 @@
 #----------CONSOLE----------#
 ####MAP_TYPE####
 set maptype = 0 #different countries has their own background color [0 = topo / 1 = country]
-if ($maptype == 1) then 
-	set map = "country"
-else
-	set map = "topo"
-endif
+set colortype = 1 #colors to be implied [0 = time series for last 5 years / 1 = depth change]
 
 ####GRD&CPT####
-set grd = "/Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/euro30m.grd"
-#set grd = srtm_ECOS.grd
-#set grd = srtm_ECOS.grd
-#set grd = Wagner_Moho__LET_CSS_Euro
-#set grd = Wagner_Moho_LET_CSS_Adria
-#set grd = Wagner_Moho_LET_CSS_Liguria
-#set grd = ETOPO1_Bed_g_gmt4.grd
-set cpt = "temp_dem4"
+set grd = "/Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/srtm_ECOS.grd"
+set cpt = "gray"
+set seiscpt = "rainbow"
+set focalcpt = "meca"
 
 ####CALTALOGUE####
 set catalogue = "/Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest"
@@ -41,23 +32,34 @@ set catalogue = "/Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1
 ####PROJECTION####
 set proj = M9i
 
-####set_region####
+####REGION####
 set east = 7.10
 set west = 7.70
 set south = 46.15
 set north = 46.40
-set region = "$east/$west/$south/$north"
-#set region = 7.10/7.70/46.15/46.40
+
+####COMMENT####
+set comment = ""
 #----------CONSOLE----------#
 
+
 #----------PRE_SET----------#
-####FILE_NAME####
-set comment = "2015-2016"
-set ps = seismicity_sion_"$map"_"$cpt"_"$east"_"$west"_"$south"_"$north"_"$comment".ps
+if ($maptype == 1) then 
+	set map = "country"
+else
+	set map = "topo"
+endif
+if ($colortype == 1) then 
+	set col = "depth"
+else
+	set col = "time"
+endif
+set region = "$east/$west/$south/$north"
+set ps = seismicity_sion_"$map"_"$cpt"_"$col"_"$seiscpt"_"$east"_"$west"_"$south"_"$north"_"$comment".ps
 ####GMT_SET####
-gmtset PS_MEDIA = letter
-gmtset PS_PAGE_ORIENTATION = landscape
-gmtset FONT_ANNOT_PRIMARY 12p,Times-Bold,red
+gmt gmtset PS_MEDIA = letter
+gmt gmtset PS_PAGE_ORIENTATION = landscape
+gmt gmtset FONT_ANNOT_PRIMARY 12p,AvantGarde-Book,gray30
 #gmtset FORMAT_GEO_MAP
 #gmtset MAP_GRID_CROSS_SIZE_PRIMARY
 #gmtset PAPER_MEDIA A4
@@ -75,62 +77,108 @@ gmt gmtset MAP_FRAME_TYPE = plain
 
 #----------MAP----------#
 ####BASEMAP####
-gmt psbasemap -R$region -J$proj -Bxa0.1f0.05g0.1+"longitude" -Bya0.1f0.05g0.1+l"latitude" -BWNes+t"SION Seismicity" -K > $ps
+gmt psbasemap -R$region -J$proj -Bxa0.1f0.05g0.1+"longitude" -Bya0.1f0.05g0.1+l"latitude" -BWNes+t"SION Seismicity" -DjTR+w1.5i+o0.15i/0.1i -F+gwhite+p1p+c0.1c+s -K > $ps
+#-D5/13/45.5/49 
 
-####GRD&CPT####
+####GRD####
 if ($maptype == 0) then
-	gmt grdcut $grd -Gtemp.grd -R$region
-	#CPT
-	gmt grd2cpt temp.grd -A90 -Cdem4 -R$region -S-3000/3000/100 > temp_dem4.cpt
-	gmt makecpt -Cgray -T-5000/+5000/100 > temp_gray.cpt
+	#cpt
+	#gmt grdcut $grd -Gtemp.grd -R$region
+	#gmt grd2cpt temp.grd -A50 -Cgray -R$region -S-5000/5000/100 -Z > temp_grd_gray.cpt
+	gmt makecpt -A+80 -Cdem4 -T-100/+3000/100 -Z > temp_dem4.cpt
+	gmt makecpt -Cgray -T-5000/+5000/100 -Z > temp_gray.cpt
 	gmt makecpt -Cocean -T-1000/0/250 -Z > temp_ocean.cpt
-	gmt makecpt -Cmby.cpt -T-8000/5100/1000 -Z > temp_mby.cpt
-	#GRD
-	gmt grdimage temp.grd -R -J -C$cpt -O -K >> $ps
-	gmt grdcontour temp.grd -R -J -C1000 -L-6000/3000 -Wa5/25 -V -O -K >> $ps
-	gmt psscale -C$cpt -D5/-1.5/7/0.2h -P -O -Ba2000:meter: -I -O -K -V  >> $ps
-	#gmt grdgradient
-	#gmt grdmath
+	#grd
+	gmt grdgradient $grd -Gtemp_grad.grd -A315
+	#gmt grdgradient temp.grd -Gtemp_gradient.grd -A0/100 -Ne1.0
+	gmt grdmath temp_grad.grd 80000 DIV = temp_grad_div.grd
+	if (-e "temp_$cpt.cpt") then
+		gmt grdimage $grd -R -J -C"temp_$cpt.cpt" -Itemp_grad_div.grd -nb -O -K >> $ps
+		#gmt grdimage temp.grd -R -J -C$cpt -E300 -Itemp_gradient.grd -Q -O -K >> $ps
+	else
+		gmt grdimage $grd -R -J -C"$cpt.cpt" -Itemp_grad_div.grd -nb -O -K >> $ps
+	endif
+	gmt grdcontour $grd -R -J -A1000+pgray30 -C1000 -L-5000/5000 -Wa1p,gray30 -V -O -K >> $ps
+	gmt psscale -C$cpt -Dx-0.7c/-0.7c+jBL+w6c/0.4c+h -Bxaf+l"topography" -By+lkm -I -O -K -V  >> $ps
 endif
 
-####pscoast####
+####PSCOAST####
 if ($maptype == 1) then
-set color1='#CD5C5C@50' #switzerland
-set colorgroup1='CH'
-set color2='coral@50' #german
-set colorgroup2='DE'
-set color3='240/230/140@50' #france
-set colorgroup3='FR'
-set color4='0/36/74/4@50' #itlay
-set colorgroup4='IT'
-set color5='#8DC740@50' #austria
-set colorgroup5='AT'
-set color6='250/138/255@50' #liechtenstein
-set colorgroup6='LI'
-set color0='169@50' #other countries
-gmt pscoast -R -J -G${color0} -S -Dh -B -V -O -K >> $ps
-gmt pscoast -R -J -O -K -E${colorgroup1}+g${color1} >> $ps
-gmt pscoast -R -J -O -K -E${colorgroup2}+g${color2} >> $ps
-gmt pscoast -R -J -O -K -E${colorgroup3}+g${color3} >> $ps
-gmt pscoast -R -J -O -K -E${colorgroup4}+g${color4} >> $ps
-gmt pscoast -R -J -O -K -E${colorgroup5}+g${color5} >> $ps
-gmt pscoast -R -J -O -K -E${colorgroup6}+g${color6} >> $ps
-gmt pscoast -R -J -O -K -Dh -Ir/1p,cornflowerblue -N1/1p,,- -W1p,black >> $ps
+	set color1='#CD5C5C@50' #switzerland
+	set colorgroup1='CH'
+	set color2='coral@50' #german
+	set colorgroup2='DE'
+	set color3='240/230/140@50' #france
+	set colorgroup3='FR'
+	set color4='0/36/74/4@50' #itlay
+	set colorgroup4='IT'
+	set color5='#8DC740@50' #austria
+	set colorgroup5='AT'
+	set color6='250/138/255@50' #liechtenstein
+	set colorgroup6='LI'
+	set color0='169@50' #other countries
+	gmt pscoast -R -J -G${color0} -S -Dh -B -V -O -K >> $ps
+	gmt pscoast -R -J -O -K -E${colorgroup1}+g${color1} >> $ps
+	gmt pscoast -R -J -O -K -E${colorgroup2}+g${color2} >> $ps
+	gmt pscoast -R -J -O -K -E${colorgroup3}+g${color3} >> $ps
+	gmt pscoast -R -J -O -K -E${colorgroup4}+g${color4} >> $ps
+	gmt pscoast -R -J -O -K -E${colorgroup5}+g${color5} >> $ps
+	gmt pscoast -R -J -O -K -E${colorgroup6}+g${color6} >> $ps
+	gmt pscoast -R -J -O -K -Dh -Ir/1p,cornflowerblue -N1/1p,,- -W1p,black >> $ps
 endif
 
-#add serismicity
+####SEISMICITY####
 #[time = all / magnitude = all / quality = all / focal mech. = all]
 #awk '{print $1,$2}' $catalogue | psxy -R -J -Sp -W1p -O -K >> $ps 
-awk -v ms=0.0150 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,128/128/128 -O -K >> $ps
+awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,black -O -K >> $ps
 
-#[time = 2015 / magnitude = all / quality = all / focal mech. = all]
-awk -v ms=0.0150 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2015 && $6 <= 2015) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,255/128/0 -O -K >> $ps
+##[time = 2014 / magnitude = all / quality = all / focal mech. = all]
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2010 && $6 <= 2010) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,purple -O -K >> $ps
+#
+##[time = 2014 / magnitude = all / quality = all / focal mech. = all]
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2011 && $6 <= 2011) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,43/0/255 -O -K >> $ps
+#
+##[time = 2014 / magnitude = all / quality = all / focal mech. = all]
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2012 && $6 <= 2012) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,blue -O -K >> $ps
+#
+##[time = 2014 / magnitude = all / quality = all / focal mech. = all]
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2013 && $6 <= 2013) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,green -O -K >> $ps
+#
+##[time = 2014 / magnitude = all / quality = all / focal mech. = all]
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2014 && $6 <= 2014) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,yellow -O -K >> $ps
+#
+##[time = 2015 / magnitude = all / quality = all / focal mech. = all]
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2015 && $6 <= 2015) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,orange -O -K >> $ps
+#
+##[time = 2016 / magnitude = all / quality = all / focal mech. = all]
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2016 && $6 <= 2016) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,red -O -K >> $ps
 
-#[time = 2016 / magnitude = all / quality = all / focal mech. = all]
-awk -v ms=0.0150 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2016 && $6 <= 2016) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,255/0/0 -O -K >> $ps
+if ($colortype == 0) then
+#[time = all / magnitude = all / quality = all / focal mech. = all] with automatic color scale coresponding with time 
+set seismin = `gmtinfo -C -i5 /Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest | awk '{print $1}'`
+set seismax = `gmtinfo -C -i5 /Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest | awk '{print $2}'`
+set seismin = `gmt gmtmath -Q $seismax 5 SUB =`
+set seismax = `gmt gmtmath -Q $seismax 1 ADD =`
+set seisinterv = `gmt gmtmath -Q 1 12 DIV =`
+gmt makecpt -C$seiscpt -T$seismin/$seismax/$seisinterv > temp_seis_$seiscpt.cpt
+awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= '$seismin' && $6 <= '$seismax') {print $1,$2,$6+$7/12,$4*$4*rms}}' $catalogue | gmt psxy -R -J$proj -Ctemp_seis_$seiscpt.cpt -Sc -W1p -O -K >> $ps
+gmt psscale -Ctemp_seis_$seiscpt.cpt -Dx6.7c/-0.7c+jBL+w6c/0.4c+h -Bxaf+l"time" -By+lyear -I -O -K -V  >> $ps
+endif
+
+if ($colortype == 1) then
+#[time = all / magnitude = all / quality = all / focal mech. = all] with automatic color scale coresponding with depth
+set seismin = `gmtinfo -C -i2 /Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest | awk '{print $1}'`
+set seismax = `gmtinfo -C -i2 /Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest | awk '{print $2}'`
+gmt makecpt -C$seiscpt -I -T-2/20/20+ -Z > temp_seis_$seiscpt.cpt
+awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0) {print $1,$2,$3,$4*$4*rms}}' $catalogue | gmt psxy -R -J$proj -Ctemp_seis_$seiscpt.cpt -Sc -W1p -O -K >> $ps
+gmt psscale -Ctemp_seis_$seiscpt.cpt -Dx6.7c/-0.7c+jBL+w6c/0.4c+h -Bxaf+l"depth" -By+lkm -I -O -K -V  >> $ps
+endif
+
+#[time = all / magnitude = all / quality = all / focal mech. = all] with automatic color scale coresponding with focal mechanism
 
 
-#add focal mechanisms
+####FOCAL_MECHANISMS####
+#gmt psmeca -J -R -CP5p -Sa1.3c -Z"$CPT.cpt" -K -O >> $PS
 
 #add stations
 
