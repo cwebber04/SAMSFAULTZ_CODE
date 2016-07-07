@@ -18,7 +18,7 @@
 #----------CONSOLE----------#
 ####MAP_TYPE####
 set maptype = 0 #different countries has their own background color [0 = topo / 1 = country]
-set colortype = 1 #colors to be implied [0 = time series for last 5 years / 1 = depth change]
+set colortype = 0 #colors to be implied [0 = time series for last 5 years / 1 = depth change]
 
 ####GRD&CPT####
 set grd = "/Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/srtm_ECOS.grd"
@@ -54,13 +54,17 @@ if ($colortype == 1) then
 else
 	set col = "time"
 endif
+if(! -e $catalogue) then
+   echo "file not found: $catalogue"
+   exit
+endif
 set region = "$east/$west/$south/$north"
 set ps = seismicity_sion_"$map"_"$cpt"_"$col"_"$seiscpt"_"$east"_"$west"_"$south"_"$north"_"$comment".ps
 ####GMT_SET####
 gmt gmtset PS_MEDIA = letter
 gmt gmtset PS_PAGE_ORIENTATION = landscape
 gmt gmtset FONT_ANNOT_PRIMARY 12p,AvantGarde-Book,gray30
-#gmtset FORMAT_GEO_MAP
+gmt gmtset FORMAT_GEO_MAP = D
 #gmtset MAP_GRID_CROSS_SIZE_PRIMARY
 #gmtset PAPER_MEDIA A4
 #gmtset MEASURE_UNIT = inch
@@ -77,8 +81,7 @@ gmt gmtset MAP_FRAME_TYPE = plain
 
 #----------MAP----------#
 ####BASEMAP####
-gmt psbasemap -R$region -J$proj -Bxa0.1f0.05g0.1+"longitude" -Bya0.1f0.05g0.1+l"latitude" -BWNes+t"SION Seismicity" -DjTR+w1.5i+o0.15i/0.1i -F+gwhite+p1p+c0.1c+s -K > $ps
-#-D5/13/45.5/49 
+gmt psbasemap -R$region -J$proj -Bxa0.1f0.05g0.1+"longitude" -Bya0.1f0.05g0.1+l"latitude" -BWNes+t"SION Seismicity" -K > $ps
 
 ####GRD####
 if ($maptype == 0) then
@@ -194,6 +197,31 @@ endif
 
 #--------HISTOGRAM----------#
 
+#----------INSERT_MAP----------#
+gmt pscoast -R5/13/45.5/49 -JM2i -B0 -Bwnes+gwhite -Df -N1 -W -A5000 --MAP_FRAME_TYPE=plain -X0.5c -Y10c -O -K >> $ps
+set color1='#CD5C5C@50' #switzerland
+set colorgroup1='CH'
+set color2='coral@50' #german
+set colorgroup2='DE'
+set color3='240/230/140@50' #france
+set colorgroup3='FR'
+set color4='0/36/74/4@50' #itlay
+set colorgroup4='IT'
+set color5='#8DC740@50' #austria
+set colorgroup5='AT'
+set color6='250/138/255@50' #liechtenstein
+set colorgroup6='LI'
+set color0='169@50' #other countries
+gmt pscoast -R -J -G${color0} -S -Dh -B -V -O -K >> $ps
+gmt pscoast -R -J -O -K -E${colorgroup1}+g${color1} >> $ps
+gmt pscoast -R -J -O -K -E${colorgroup2}+g${color2} >> $ps
+gmt pscoast -R -J -O -K -E${colorgroup3}+g${color3} >> $ps
+gmt pscoast -R -J -O -K -E${colorgroup4}+g${color4} >> $ps
+gmt pscoast -R -J -O -K -E${colorgroup5}+g${color5} >> $ps
+gmt pscoast -R -J -O -K -E${colorgroup6}+g${color6} >> $ps
+gmt pscoast -R -J -O -K -Dh -Ir/1p,cornflowerblue -N1/1p,,- -W1p,black >> $ps
+gmt psbasemap -R5/13/45.5/49 -JM2i -D$region -F+p2p,red -O >> $ps
+#----------INSERT_MAP----------#
 
 ####SAVE_BOTH_OUTPUT_&_ERROR_MESSAGE####
 #gmt module > output.d 2> errors.log
