@@ -18,7 +18,7 @@
 #----------CONSOLE----------#
 ####MAP_TYPE####
 set maptype = 0 #different countries has their own background color [0 = topo / 1 = country]
-set colortype = 0 #colors to be implied [0 = time series for last 5 years / 1 = depth change]
+set colortype = 1 #colors to be implied [0 = time series for last 5 years / 1 = depth change]
 
 ####GRD&CPT####
 set grd = "/Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/srtm_ECOS.grd"
@@ -37,6 +37,9 @@ set east = 7.10
 set west = 7.70
 set south = 46.15
 set north = 46.40
+
+####HISTOGRAM####
+set binsize = 1
 
 ####COMMENT####
 set comment = ""
@@ -60,23 +63,23 @@ if(! -e $catalogue) then
 endif
 set region = "$east/$west/$south/$north"
 set ps = seismicity_sion_"$map"_"$cpt"_"$col"_"$seiscpt"_"$east"_"$west"_"$south"_"$north"_"$comment".ps
+set pshist = seismicity_sion_hist_"$col"_"$east"_"$west"_"$south"_"$north"_"$comment".ps
+####SELECT_DATA####
+gmt gmtselect $catalogue -R$region > temp_eq_list
 ####GMT_SET####
 gmt gmtset PS_MEDIA = letter
 gmt gmtset PS_PAGE_ORIENTATION = landscape
+gmt gmtset PS_CHAR_ENCODING ISOLatin1+
 gmt gmtset FONT_ANNOT_PRIMARY 12p,AvantGarde-Book,gray30
 gmt gmtset FORMAT_GEO_MAP = D
 #gmtset MAP_GRID_CROSS_SIZE_PRIMARY
-#gmtset PAPER_MEDIA A4
 #gmtset MEASURE_UNIT = inch
 #gmtset HEADER_FONT_SIZE = 20
 #gmtset HEADER_FONT = Courier-Bold
 #gmtset LABEL_FONT_SIZE = 16
 #gmtset LABEL_FONT = Helvetica-Narrow-Bold
-#gmtset ANNOT_FONT_SIZE = 12
 #gmtset FRAME_WIDTH = 0.05 
 gmt gmtset MAP_FRAME_TYPE = plain
-#gmt gmtset OUTPUT_DEGREE_FORMAT +D
-#gmt gmtset PLOT_DEGREE_FORMAT +DF
 #----------PRE_SET----------#
 
 #----------MAP----------#
@@ -132,49 +135,49 @@ endif
 
 ####SEISMICITY####
 #[time = all / magnitude = all / quality = all / focal mech. = all]
-#awk '{print $1,$2}' $catalogue | psxy -R -J -Sp -W1p -O -K >> $ps 
-awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,black -O -K >> $ps
+#awk '{print $1,$2}' temp_eq_list | psxy -R -J -Sp -W1p -O -K >> $ps 
+awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0) {print $1,$2,$4*$4*rms}}' temp_eq_list | psxy -R -J$proj -Sc -W1p,black -O -K >> $ps
 
 ##[time = 2014 / magnitude = all / quality = all / focal mech. = all]
-#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2010 && $6 <= 2010) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,purple -O -K >> $ps
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2010 && $6 <= 2010) {print $1,$2,$4*$4*rms}}' temp_eq_list | psxy -R -J$proj -Sc -W1p,purple -O -K >> $ps
 #
 ##[time = 2014 / magnitude = all / quality = all / focal mech. = all]
-#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2011 && $6 <= 2011) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,43/0/255 -O -K >> $ps
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2011 && $6 <= 2011) {print $1,$2,$4*$4*rms}}' temp_eq_list | psxy -R -J$proj -Sc -W1p,43/0/255 -O -K >> $ps
 #
 ##[time = 2014 / magnitude = all / quality = all / focal mech. = all]
-#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2012 && $6 <= 2012) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,blue -O -K >> $ps
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2012 && $6 <= 2012) {print $1,$2,$4*$4*rms}}' temp_eq_list | psxy -R -J$proj -Sc -W1p,blue -O -K >> $ps
 #
 ##[time = 2014 / magnitude = all / quality = all / focal mech. = all]
-#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2013 && $6 <= 2013) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,green -O -K >> $ps
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2013 && $6 <= 2013) {print $1,$2,$4*$4*rms}}' temp_eq_list | psxy -R -J$proj -Sc -W1p,green -O -K >> $ps
 #
 ##[time = 2014 / magnitude = all / quality = all / focal mech. = all]
-#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2014 && $6 <= 2014) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,yellow -O -K >> $ps
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2014 && $6 <= 2014) {print $1,$2,$4*$4*rms}}' temp_eq_list | psxy -R -J$proj -Sc -W1p,yellow -O -K >> $ps
 #
 ##[time = 2015 / magnitude = all / quality = all / focal mech. = all]
-#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2015 && $6 <= 2015) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,orange -O -K >> $ps
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2015 && $6 <= 2015) {print $1,$2,$4*$4*rms}}' temp_eq_list | psxy -R -J$proj -Sc -W1p,orange -O -K >> $ps
 #
 ##[time = 2016 / magnitude = all / quality = all / focal mech. = all]
-#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2016 && $6 <= 2016) {print $1,$2,$4*$4*rms}}' $catalogue | psxy -R -J$proj -Sc -W1p,red -O -K >> $ps
+#awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= 2016 && $6 <= 2016) {print $1,$2,$4*$4*rms}}' temp_eq_list | psxy -R -J$proj -Sc -W1p,red -O -K >> $ps
 
 if ($colortype == 0) then
-#[time = all / magnitude = all / quality = all / focal mech. = all] with automatic color scale coresponding with time 
-set seismin = `gmtinfo -C -i5 /Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest | awk '{print $1}'`
-set seismax = `gmtinfo -C -i5 /Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest | awk '{print $2}'`
-set seismin = `gmt gmtmath -Q $seismax 5 SUB =`
-set seismax = `gmt gmtmath -Q $seismax 1 ADD =`
-set seisinterv = `gmt gmtmath -Q 1 12 DIV =`
-gmt makecpt -C$seiscpt -T$seismin/$seismax/$seisinterv > temp_seis_$seiscpt.cpt
-awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= '$seismin' && $6 <= '$seismax') {print $1,$2,$6+$7/12,$4*$4*rms}}' $catalogue | gmt psxy -R -J$proj -Ctemp_seis_$seiscpt.cpt -Sc -W1p -O -K >> $ps
-gmt psscale -Ctemp_seis_$seiscpt.cpt -Dx6.7c/-0.7c+jBL+w6c/0.4c+h -Bxaf+l"time" -By+lyear -I -O -K -V  >> $ps
+	#[time = all / magnitude = all / quality = all / focal mech. = all] with automatic color scale coresponding with time 
+	set seismin = `gmtinfo -C -i5 /Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest | awk '{print $1}'`
+	set seismax = `gmtinfo -C -i5 /Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest | awk '{print $2}'`
+	set seismin = `gmt gmtmath -Q $seismax 5 SUB =`
+	set seismax = `gmt gmtmath -Q $seismax 1 ADD =`
+	set seisinterv = `gmt gmtmath -Q 1 12 DIV =`
+	gmt makecpt -C$seiscpt -T$seismin/$seismax/$seisinterv > temp_seis_$seiscpt.cpt
+	awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0 && $6 >= '$seismin' && $6 <= '$seismax') {print $1,$2,$6+$7/12,$4*$4*rms}}' temp_eq_list | gmt psxy -R -J$proj -Ctemp_seis_$seiscpt.cpt -Sc -W1p -O -K >> $ps
+	gmt psscale -Ctemp_seis_$seiscpt.cpt -Dx6.7c/-0.7c+jBL+w6c/0.4c+h -Bxaf+l"time" -By+lyear -I -O -K -V  >> $ps
 endif
 
 if ($colortype == 1) then
-#[time = all / magnitude = all / quality = all / focal mech. = all] with automatic color scale coresponding with depth
-set seismin = `gmtinfo -C -i2 /Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest | awk '{print $1}'`
-set seismax = `gmtinfo -C -i2 /Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest | awk '{print $2}'`
-gmt makecpt -C$seiscpt -I -T-2/20/20+ -Z > temp_seis_$seiscpt.cpt
-awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0) {print $1,$2,$3,$4*$4*rms}}' $catalogue | gmt psxy -R -J$proj -Ctemp_seis_$seiscpt.cpt -Sc -W1p -O -K >> $ps
-gmt psscale -Ctemp_seis_$seiscpt.cpt -Dx6.7c/-0.7c+jBL+w6c/0.4c+h -Bxaf+l"depth" -By+lkm -I -O -K -V  >> $ps
+	#[time = all / magnitude = all / quality = all / focal mech. = all] with automatic color scale coresponding with depth
+	set seismin = `gmtinfo -C -i2 /Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest | awk '{print $1}'`
+	set seismax = `gmtinfo -C -i2 /Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/MANULOC_List_1984_2012_ECOS_short.log.latest | awk '{print $2}'`
+	gmt makecpt -C$seiscpt -I -T-2/20/20+ -Z > temp_seis_$seiscpt.cpt
+	awk -v ms=0.0200 '{rms=ms*1.0;if(substr($1,1,1)!="#" && substr($12,1,3)=="SED" && $4>1.0) {print $1,$2,$3,$4*$4*rms}}' temp_eq_list | gmt psxy -R -J$proj -Ctemp_seis_$seiscpt.cpt -Sc -W1p -O -K >> $ps
+	gmt psscale -Ctemp_seis_$seiscpt.cpt -Dx6.7c/-0.7c+jBL+w6c/0.4c+h -Bxaf+l"depth" -By+lkm -I -O -K -V  >> $ps
 endif
 
 #[time = all / magnitude = all / quality = all / focal mech. = all] with automatic color scale coresponding with focal mechanism
@@ -194,11 +197,48 @@ endif
 #--------PROFILE----------#
 
 #--------HISTOGRAM----------#
-
+if ($colortype == 0) then
+	set histxmin = `awk '{print $6}' temp_eq_list | gmt pshistogram -I -W$binsize | awk '{print $1}'`
+	set histxmin = `gmt gmtmath -Q $histxmin 1 SUB =`
+	set histxmax = `awk '{print $6}' temp_eq_list | gmt pshistogram -I -W$binsize | awk '{print $2}'`
+	set histxmax = `gmt gmtmath -Q $histxmax 1 ADD =`
+	set histymin = `awk '{print $6}' temp_eq_list | gmt pshistogram -I -W$binsize | awk '{print $3}'`
+	set histymax = `awk '{print $6}' temp_eq_list | gmt pshistogram -I -W$binsize | awk '{print $4}'`
+	set histymax = `gmt gmtmath -Q $histymax 500 ADD =`
+	awk '{print $6}' temp_eq_list | gmt pshistogram -Bxa5f1+l"Year" -Bya500f100+l"Frequency (counts)" -BWSne+t"Histogram"+glightblue -R$histxmin/$histxmax/$histymin/$histymax -JX6i/3i -D+r -F -Gorange -L1p -N0 -W$binsize -P -K > $pshist
+	set chistxmin = `awk '{print $6}' temp_eq_list | gmt pshistogram -I -Q -W$binsize | awk '{print $1}'`
+	set chistxmin = `gmt gmtmath -Q $chistxmin 1 SUB =`
+	set chistxmax = `awk '{print $6}' temp_eq_list | gmt pshistogram -I -Q -W$binsize | awk '{print $2}'`
+	set chistxmax = `gmt gmtmath -Q $chistxmax 1 ADD =`
+	set chistymin = `awk '{print $6}' temp_eq_list | gmt pshistogram -I -Q -W$binsize | awk '{print $3}'`
+	set chistymax = `awk '{print $6}' temp_eq_list | gmt pshistogram -I -Q -W$binsize | awk '{print $4}'`
+	set chistymax = `gmt gmtmath -Q $histymax LOG 1 ADD =`
+	awk '{print $6}' temp_eq_list | gmt pshistogram -Bxa5f1+l"Year" -Bya5f1+l"Frequency (counts)" -BWSne+t"Culmulative Histogram"+glightblue -R$chistxmin/$chistxmax/$chistymin/$chistymax -JX6i/3i -D+r -F -Gorange -L1p -N0 -W$binsize -Q -Y5i -Z4 -O -K >> $pshist
+	#gmt psrose fractures.d -: -A10r -S1.8in -P -Gorange -R0/1/0/360 -X2.5i -Bx0.2g0.2 -By30g30 -B+glightblue -W1p -O >> $pshist
+endif
+if ($colortype == 1) then
+	set histxmin = `awk '{print $3}' temp_eq_list | gmt pshistogram -I -W$binsize | awk '{print $1}'`
+	set histxmin = `gmt gmtmath -Q $histxmin 1 SUB =`
+	set histxmax = `awk '{print $3}' temp_eq_list | gmt pshistogram -I -W$binsize | awk '{print $2}'`
+	set histxmax = `gmt gmtmath -Q $histxmax 1 ADD =`
+	set histymin = `awk '{print $3}' temp_eq_list | gmt pshistogram -I -W$binsize | awk '{print $3}'`
+	set histymax = `awk '{print $3}' temp_eq_list | gmt pshistogram -I -W$binsize | awk '{print $4}'`
+	set histymax = `gmt gmtmath -Q $histymax 500 ADD =`
+	awk '{print $3}' temp_eq_list | gmt pshistogram -Bxa5f1+l"Depth" -Bya500f100+l"Frequency (counts)" -BWSne+t"Histogram"+glightblue -R$histxmin/$histxmax/$histymin/$histymax -JX6i/3i -D+r -F -Gorange -L1p -N0 -W$binsize -P -K > $pshist
+	set chistxmin = `awk '{print $3}' temp_eq_list | gmt pshistogram -I -Q -W$binsize | awk '{print $1}'`
+	set chistxmin = `gmt gmtmath -Q $chistxmin 1 SUB =`
+	set chistxmax = `awk '{print $3}' temp_eq_list | gmt pshistogram -I -Q -W$binsize | awk '{print $2}'`
+	set chistxmax = `gmt gmtmath -Q $chistxmax 1 ADD =`
+	set chistymin = `awk '{print $3}' temp_eq_list | gmt pshistogram -I -Q -W$binsize | awk '{print $3}'`
+	set chistymax = `awk '{print $3}' temp_eq_list | gmt pshistogram -I -Q -W$binsize | awk '{print $4}'`
+	set chistymax = `gmt gmtmath -Q $histymax LOG 1 ADD =`
+	awk '{print $3}' temp_eq_list | gmt pshistogram -Bxa5f1+l"Depth" -Bya5f1+l"Frequency (counts)" -BWSne+t"Culmulative Histogram"+glightblue -R$chistxmin/$chistxmax/$chistymin/$chistymax -JX6i/3i -D+r -F -Gorange -L1p -N0 -W$binsize -Q -Y5i -Z4 -O -K >> $pshist
+	#gmt psrose fractures.d -: -A10r -S1.8in -P -Gorange -R0/1/0/360 -X2.5i -Bx0.2g0.2 -By30g30 -B+glightblue -W1p -O >> $pshist
+endif
 #--------HISTOGRAM----------#
 
 #----------INSERT_MAP----------#
-gmt pscoast -R5/13/45.5/49 -JM2i -B0 -Bwnes+gwhite -Df -N1 -W -A5000 --MAP_FRAME_TYPE=plain -X0.5c -Y10c -O -K >> $ps
+gmt pscoast -R5/13/45.5/49 -JM2i -B0 -Bwnes+gwhite -Df -N1 -W -A5000 --MAP_FRAME_TYPE=plain -X0.2i -Y4i -O -K >> $ps
 set color1='#CD5C5C@50' #switzerland
 set colorgroup1='CH'
 set color2='coral@50' #german
@@ -230,5 +270,6 @@ gmt psbasemap -R5/13/45.5/49 -JM2i -D$region -F+p2p,red -O >> $ps
 #gmt psconvert -Tf $ps
 
 echo "Figure saved as: $ps"
+echo "Histogram saved as: $pshist"
 
 rm temp*
