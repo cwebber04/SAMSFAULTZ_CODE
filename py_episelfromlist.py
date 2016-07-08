@@ -776,7 +776,7 @@ timeen = string.strip(sp[1])
 #Other definition (fixed at the moment)
 
 #List with station coordinates:
-statlist = "/Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/sed_stations.GSE_SED.alias"
+statlist = "/Users/tdiehl/lib/sed_stations.GSE_SED.alias"
 
 #SC3 origins are preferred over MANULOC (reference) after:
 SC3overKPdate = '2012-10-03 00:00:00'
