@@ -18,7 +18,7 @@
 #----------CONSOLE----------#
 ####MAP_TYPE####
 set maptype = 0 #different countries has their own background color [0 = topo / 1 = country]
-set colortype = 1 #colors to be implied [0 = time series for last 5 years / 1 = depth change]
+set colortype = 0 #colors to be implied [0 = time series for last 5 years / 1 = depth change]
 
 ####GRD&CPT####
 set grd = "/Users/timothy.lee/polybox/Shared/SAMSFAULTZ/lib/srtm_ECOS.grd"
@@ -214,7 +214,6 @@ if ($colortype == 0) then
 	set chistymax = `awk '{print $6}' temp_eq_list | gmt pshistogram -I -Q -W$binsize | awk '{print $4}'`
 	set chistymax = `gmt gmtmath -Q $histymax LOG 1 ADD =`
 	awk '{print $6}' temp_eq_list | gmt pshistogram -Bxa5f1+l"Year" -Bya5f1+l"Frequency (counts)" -BWSne+t"Culmulative Histogram"+glightblue -R$chistxmin/$chistxmax/$chistymin/$chistymax -JX6i/3i -D+r -F -Gorange -L1p -N0 -W$binsize -Q -Y5i -Z4 -O -K >> $pshist
-	#gmt psrose fractures.d -: -A10r -S1.8in -P -Gorange -R0/1/0/360 -X2.5i -Bx0.2g0.2 -By30g30 -B+glightblue -W1p -O >> $pshist
 endif
 if ($colortype == 1) then
 	set histxmin = `awk '{print $3}' temp_eq_list | gmt pshistogram -I -W$binsize | awk '{print $1}'`
@@ -233,7 +232,6 @@ if ($colortype == 1) then
 	set chistymax = `awk '{print $3}' temp_eq_list | gmt pshistogram -I -Q -W$binsize | awk '{print $4}'`
 	set chistymax = `gmt gmtmath -Q $histymax LOG 1 ADD =`
 	awk '{print $3}' temp_eq_list | gmt pshistogram -Bxa5f1+l"Depth" -Bya5f1+l"Frequency (counts)" -BWSne+t"Culmulative Histogram"+glightblue -R$chistxmin/$chistxmax/$chistymin/$chistymax -JX6i/3i -D+r -F -Gorange -L1p -N0 -W$binsize -Q -Y5i -Z4 -O -K >> $pshist
-	#gmt psrose fractures.d -: -A10r -S1.8in -P -Gorange -R0/1/0/360 -X2.5i -Bx0.2g0.2 -By30g30 -B+glightblue -W1p -O >> $pshist
 endif
 #--------HISTOGRAM----------#
 
@@ -267,9 +265,9 @@ gmt psbasemap -R5/13/45.5/49 -JM2i -D$region -F+p2p,red -O >> $ps
 #gmt module > output.d 2> errors.log
 
 ####CONVERT_FROM_POSTSCRIPT_TO_PDF####
-#gmt psconvert -Tf $ps
+gmt psconvert -A -Tf $ps $pshist
 
-echo "Figure saved as: $ps"
+echo "Map saved as: $ps"
 echo "Histogram saved as: $pshist"
 
 rm temp*
